@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>School Portal</title>
+  </head>
+  <style>
+    * {
+      font-family: "Gowun Dodum", sans-serif;
+    }
+    body {
+      background-color: black;
+      color: white;
+    }
+  </style>
+  <style>
+    .container {
+      width: 75%;
+      height: 50vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+
+    .section {
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      background-image: url('https://cdn.pixabay.com/photo/2022/02/03/00/58/stars-6989616_640.jpg');
+      background-size:cover;
+      background-repeat: no-repeat
+      opacity: 0.5;
+     
+    }
+.section p{
+  font-size:27px;
+  padding:10% ;
+  margin-top:5%;
+}
+    .section:nth-child(odd) {
+      color: white;
+        backdrop-filter: blur(7px)
+     
+      
+    }
+    .section:nth-child(even) {
+      color: white;
+      backdrop-filter: blur(7px)
+    }
+    .scroll-btn {
+      font-size: 1rem; 
+      color: white;
+      background-color: red; 
+      border: none;
+      border-radius: 5px; /* Add border-radius to make it rounded */
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); 
+      cursor: pointer; 
+      padding: 5px 10px;
+      margin-top:10%;
+    }
+    
+  </style>
+  <script>
+    $(document).ready(function () {
+      show_list();
+    });
+    function show_list() {
+      $.ajax({
+        type: "GET",
+        url: "/studentdata",
+        data: {},
+        success: function (response) {
+          console.log("get");
+          console.log(response);
+          let rows = response["buckets"];
+          for (let i = 0; i < rows.length; i++) {
+            let name = rows[i]["name"];
+            let Sclass = rows[i]["class"];
+            let score = rows[i]["score"];
+            let num = rows[i]["num"];
+            let done = rows[i]["done"];
+            let temp_html = "";
+            if (done === 0) {
+              console.log("done is 0");
+              temp_html = `
+                <tr>
+                  <td>${name}</td>
+                  <td>${Sclass}</td>
+                  <td>${score}</td>
+                  <td><button onclick="update_student(${num})">Add To Spotlight</button></td>
+                  <td><button onclick="remove_student(${num})">Remove</button></td>
+                </tr>
+                `;
+            } else {
+              console.log("done is 1");
+              temp_html = `
+            <tr>
+
+              <td>${name}</td>
+              <td>${Sclass}</td>
+              <td>${score}</td>
+              <td><button >Added To Spotlight</button></td>
+              <td><button onclick="remove_student(${num})">Remove</button></td>
+            </tr>
+            `;
+            temp_html02 = `
+            <div class="section">
+              <h1><strong>${name}</strong></h1>
+              <p>&nbsp; Score: ${score}</p>
+            </div>
+          `;
+          ;
+            }
+            $("#table-content").append(temp_html);
+            $("#spotlight_list").append(temp_html02);
+          }
+        },
+      });
+    }
+    function test_btn() {
+      let name = $("#name").val();
+      let Sclass = $("#Sclass").val();
+      let score = $("#score").val();
+      $.ajax({
+        type: "POST",
+        url: "/data",
+        data: {
+          studentName: name,
+          studentClass: Sclass,
+          studentScore: score,
+        },
+        success: function (response) {
+          alert(response["msg"]);
+          alert("post done");
+          console.log("response ", response);
+          window.location.reload();
+        },
+      });
+    }
+
+    // window.location.reload();
+
+    function update_student(num) {
+      $.ajax({
+        type: "POST",
+        url: "/update",
+        data: { num_give: num },
+        success: function (response) {
+          console.log(num);
+          console.log(response);
+          console.log("updated");
+          alert(response["msg"]);
+        },
+      });
+    }
+
+    function remove_student(num) {
+      $.ajax({
+        type: "POST",
+        url: "/delete",
+        data: { num_give: num },
+        success: function (response) {
+          alert(response["msg"]);
+          window.location.reload();
+        },
+      });
+    }
+  </script>
+
+  <body class="m-3 p-3">
+    <h1 class="display-4 font-weight-bold text-center mt-5">
+      AUD School Portal
+    </h1>
+    <div class="row mt-5">
+      <div class="col-md-4 m-5">
+        <img
+          src="https://cdn.pixabay.com/photo/2023/02/10/10/39/avatar-7780594_640.png"
+          class="img-fluid"
+        />
+      </div>
+      <div class="bg-black w-50 h-25 ">
+        <h1 class="">⭐spotlight students</h1>
+        <div class="container mt-5" id="spotlight_list">
+         
+        </div>
+      </div>
+     
+
+    <div class="w-50 mx-auto">
+      <form class="m-5 p-5">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            placeholder="Enter Your Full Name"
+          />
+        </div>
+        <div class="form-group">
+          <label for="Sclass">Class</label>
+          <input
+            type="text"
+            class="form-control"
+            id="Sclass"
+            placeholder="your class and section"
+          />
+        </div>
+        <div class="form-group">
+          <label for="score">Final Score</label>
+          <input type="number" class="form-control" id="score" />
+        </div>
+        <div class="text-center">
+          <button onclick="test_btn()" class="btn btn-primary m-2 p-2">Done!</button>
+        </div>
+        </form>
+    </div>
+
+    <table class="table table-dark">
+      <thead id="table-content">
+        <tr>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Final Score</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </body>
+</html>
